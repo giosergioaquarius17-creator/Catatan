@@ -3,96 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catatan Saya</title>
+    <title>Catatan Super</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; background: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
-        h3 { text-align: center; color: #333; }
+        :root { --bg: #f4f4f9; --card: #ffffff; --text: #333; --item: #fff; }
+        .dark-theme { --bg: #1a1a1a; --card: #2d2d2d; --text: #f4f4f9; --item: #3d3d3d; }
+        
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 380px; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .dark-mode-btn { cursor: pointer; font-size: 24px; background: none; border: none; }
+        
         .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
-        button { padding: 12px; cursor: pointer; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; }
-        .share-btn { width: 100%; background: #3498db; margin-top: 15px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; outline: none; background: var(--item); color: var(--text); }
+        button.add-btn { padding: 12px; cursor: pointer; background: #2ecc71; color: white; border: none; border-radius: 10px; font-weight: bold; }
+        
         ul { list-style: none; padding: 0; }
-        li { background: #fff; margin-bottom: 10px; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #2ecc71; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .delete-btn { color: #e74c3c; cursor: pointer; font-weight: bold; font-size: 18px; }
+        li { background: var(--item); margin-bottom: 12px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; }
+        .task-text { flex: 1; }
+        .done { text-decoration: line-through; opacity: 0.5; }
+        .time-tag { font-size: 10px; color: #888; display: block; }
+        
+        .delete-btn { color: #e74c3c; font-weight: bold; margin-left: 15px; font-size: 20px; }
+        .share-btn { width: 100%; background: #3498db; margin-top: 15px; padding: 12px; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
-<body>
+<body id="bodyTag">
 
 <div class="card">
-    <h3>Daftar Tugas 🚀</h3>
+    <div class="header">
+        <h3>Tugasku 🚀</h3>
+        <button class="dark-mode-btn" onclick="toggleDarkMode()">🌓</button>
+    </div>
+
     <div class="input-group">
-        <input type="text" id="taskInput" placeholder="Ketik tugas baru...">
-        <button onclick="tambahTugas()">Tambah</button>
+        <input type="text" id="taskInput" placeholder="Catat rencana hari ini...">
+        <button class="add-btn" onclick="tambahTugas()">Tambah</button>
     </div>
     
     <ul id="taskList"></ul>
-
-    <button class="share-btn" onclick="bagikanCatatan()">📤 Bagikan Daftar Tugas</button>
+    <button class="share-btn" onclick="bagikanCatatan()">📤 Bagikan ke Teman</button>
 </div>
 
 <script>
     window.onload = function() {
-        let savedTasks = JSON.parse(localStorage.getItem('myTasks')) || [];
+        let savedTasks = JSON.parse(localStorage.getItem('superTasks')) || [];
         savedTasks.forEach(task => renderTask(task));
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
+        if (localStorage.getItem('theme') === 'dark') toggleDarkMode();
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     };
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-theme');
+        let theme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+        localStorage.setItem('theme', theme);
+    }
 
     function tambahTugas() {
         let input = document.getElementById('taskInput');
         if (input.value.trim() === "") return;
-        renderTask(input.value);
-        saveToLocal(input.value);
+
+        let now = new Date();
+        let timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        
+        let taskObj = { text: input.value, done: false, time: timeStr };
+        renderTask(taskObj);
+        saveToLocal(taskObj);
         input.value = "";
     }
 
-    function renderTask(taskText) {
+    function renderTask(taskObj) {
         let list = document.getElementById('taskList');
         let li = document.createElement('li');
-        li.innerHTML = `<span>${taskText}</span> <span class="delete-btn" onclick="hapusTugas(this, '${taskText}')">×</span>`;
+        li.innerHTML = `
+            <div class="task-text ${taskObj.done ? 'done' : ''}" onclick="toggleDone(this, '${taskObj.text}')">
+                <span class="time-tag">Jam: ${taskObj.time}</span>
+                ${taskObj.text}
+            </div>
+            <span class="delete-btn" onclick="hapusTugas(this, '${taskObj.text}')">×</span>
+        `;
         list.appendChild(li);
     }
 
+    function toggleDone(el, text) {
+        el.classList.toggle('done');
+        let tasks = JSON.parse(localStorage.getItem('superTasks'));
+        tasks.forEach(t => { if(t.text === text) t.done = !t.done; });
+        localStorage.setItem('superTasks', JSON.stringify(tasks));
+    }
+
     function saveToLocal(task) {
-        let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
+        let tasks = JSON.parse(localStorage.getItem('superTasks')) || [];
         tasks.push(task);
-        localStorage.setItem('myTasks', JSON.stringify(tasks));
+        localStorage.setItem('superTasks', JSON.stringify(tasks));
     }
 
-    function hapusTugas(element, taskText) {
+    function hapusTugas(element, text) {
         element.parentElement.remove();
-        let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
-        let filteredTasks = tasks.filter(t => t !== taskText);
-        localStorage.setItem('myTasks', JSON.stringify(filteredTasks));
+        let tasks = JSON.parse(localStorage.getItem('superTasks')) || [];
+        localStorage.setItem('superTasks', JSON.stringify(tasks.filter(t => t.text !== text)));
     }
 
-    // FUNGSI SHARE BARU
     async function bagikanCatatan() {
-        let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
-        if (tasks.length === 0) {
-            alert("Daftar tugas kosong, tidak ada yang bisa dibagikan.");
-            return;
-        }
-
-        let teksBagikan = "Daftar Tugas Saya Hari Ini:\n" + tasks.map((t, i) => `${i+1}. ${t}`).join("\n");
-
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'Daftar Tugasku',
-                    text: teksBagikan,
-                });
-            } catch (err) {
-                console.log("Gagal membagikan: " + err);
-            }
-        } else {
-            alert("Maaf, browsermu tidak mendukung fitur share. Coba buka di Chrome/Safari HP.");
-        }
+        let tasks = JSON.parse(localStorage.getItem('superTasks')) || [];
+        if (tasks.length === 0) return alert("Kosong!");
+        let teks = "Daftar Tugasku:\n" + tasks.map(t => `${t.done ? '[✔]' : '[ ]'} ${t.text} (${t.time})`).join("\n");
+        if (navigator.share) await navigator.share({ title: 'My Tasks', text: teks });
     }
 </script>
-
 </body>
 </html>
