@@ -6,24 +6,30 @@
     <title>Catatan Saya</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding: 50px; background: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 320px; }
-        input { width: 65%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        button { padding: 10px; cursor: pointer; background: #2ecc71; color: white; border: none; border-radius: 4px; font-weight: bold; }
-        ul { list-style: none; padding: 0; margin-top: 20px; }
-        li { background: #eee; margin-bottom: 8px; padding: 10px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-        .delete-btn { color: #e74c3c; cursor: pointer; font-weight: bold; padding: 5px; }
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
+        h3 { text-align: center; color: #333; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        button { padding: 12px; cursor: pointer; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; }
+        .share-btn { width: 100%; background: #3498db; margin-top: 15px; }
+        ul { list-style: none; padding: 0; }
+        li { background: #fff; margin-bottom: 10px; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #2ecc71; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .delete-btn { color: #e74c3c; cursor: pointer; font-weight: bold; font-size: 18px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h3>Daftar Tugas 🚀</h3>
-    <div style="display: flex; gap: 5px;">
-        <input type="text" id="taskInput" placeholder="Mau ngerjain apa?">
+    <div class="input-group">
+        <input type="text" id="taskInput" placeholder="Ketik tugas baru...">
         <button onclick="tambahTugas()">Tambah</button>
     </div>
+    
     <ul id="taskList"></ul>
+
+    <button class="share-btn" onclick="bagikanCatatan()">📤 Bagikan Daftar Tugas</button>
 </div>
 
 <script>
@@ -46,7 +52,7 @@
     function renderTask(taskText) {
         let list = document.getElementById('taskList');
         let li = document.createElement('li');
-        li.innerHTML = `<span>${taskText}</span> <span class="delete-btn" onclick="hapusTugas(this, '${taskText}')">✕</span>`;
+        li.innerHTML = `<span>${taskText}</span> <span class="delete-btn" onclick="hapusTugas(this, '${taskText}')">×</span>`;
         list.appendChild(li);
     }
 
@@ -61,6 +67,30 @@
         let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
         let filteredTasks = tasks.filter(t => t !== taskText);
         localStorage.setItem('myTasks', JSON.stringify(filteredTasks));
+    }
+
+    // FUNGSI SHARE BARU
+    async function bagikanCatatan() {
+        let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
+        if (tasks.length === 0) {
+            alert("Daftar tugas kosong, tidak ada yang bisa dibagikan.");
+            return;
+        }
+
+        let teksBagikan = "Daftar Tugas Saya Hari Ini:\n" + tasks.map((t, i) => `${i+1}. ${t}`).join("\n");
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Daftar Tugasku',
+                    text: teksBagikan,
+                });
+            } catch (err) {
+                console.log("Gagal membagikan: " + err);
+            }
+        } else {
+            alert("Maaf, browsermu tidak mendukung fitur share. Coba buka di Chrome/Safari HP.");
+        }
     }
 </script>
 
