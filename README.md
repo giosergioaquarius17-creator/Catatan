@@ -1,4 +1,4 @@
-[Index.html](https://github.com/user-attachments/files/25575263/Index.html)
+[Uploading Index.html…]()
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -70,35 +70,3 @@
 
 </body>
 </html>
-[manifest.json](https://github.com/user-attachments/files/25575267/manifest.json)
-{
-  "name": "Daftar Tugas Pintar",
-  "short_name": "Tugasku",
-  "start_url": "index.html",
-  "display": "standalone",
-  "background_color": "#f4f4f9",
-  "theme_color": "#2ecc71",
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/906/906334.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}
-[sw.js](https://github.com/user-attachments/files/25575270/sw.js)
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open('v1').then((cache) => {
-      return cache.addAll(['index.html', 'manifest.json']);
-    })
-  );
-});
-
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then((response) => {
-      return response || fetch(e.request);
-    })
-  );
-});
