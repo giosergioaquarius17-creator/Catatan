@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catatan Super</title>
+    <title>Catatan Super Pro</title>
     <link rel="manifest" href="manifest.json">
     <style>
-        :root { --bg: #f4f4f9; --card: #ffffff; --text: #333; --item: #fff; }
+        :root { --bg: #f4f4f9; --card: #ffffff; --text: #333; --item: #fff; --danger: #e74c3c; }
         .dark-theme { --bg: #1a1a1a; --card: #2d2d2d; --text: #f4f4f9; --item: #3d3d3d; }
         
         body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
@@ -20,35 +20,44 @@
         button.add-btn { padding: 12px; cursor: pointer; background: #2ecc71; color: white; border: none; border-radius: 10px; font-weight: bold; }
         
         ul { list-style: none; padding: 0; }
-        li { background: var(--item); margin-bottom: 12px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; }
+        li { background: var(--item); margin-bottom: 12px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; position: relative; }
         .task-text { flex: 1; }
         .done { text-decoration: line-through; opacity: 0.5; }
-        .time-tag { font-size: 10px; color: #888; display: block; }
+        .meta-tag { font-size: 9px; color: #888; display: block; margin-bottom: 4px; }
         
-        .delete-btn { color: #e74c3c; font-weight: bold; margin-left: 15px; font-size: 20px; }
-        .share-btn { width: 100%; background: #3498db; margin-top: 15px; padding: 12px; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .delete-btn { color: var(--danger); font-weight: bold; margin-left: 15px; font-size: 20px; }
+        .action-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .share-btn { background: #3498db; }
+        .clear-btn { background: var(--danger); }
+        .btn-wide { width: 100%; padding: 12px; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body id="bodyTag">
 
 <div class="card">
     <div class="header">
-        <h3>Tugasku 🚀</h3>
+        <h3>Tugasku Pro 🚀</h3>
         <button class="dark-mode-btn" onclick="toggleDarkMode()">🌓</button>
     </div>
 
     <div class="input-group">
-        <input type="text" id="taskInput" placeholder="Catat rencana hari ini...">
+        <input type="text" id="taskInput" placeholder="Tulis rencana baru...">
         <button class="add-btn" onclick="tambahTugas()">Tambah</button>
     </div>
     
     <ul id="taskList"></ul>
-    <button class="share-btn" onclick="bagikanCatatan()">📤 Bagikan ke Teman</button>
+
+    <div class="action-btns">
+        <button class="btn-wide share-btn" onclick="bagikanCatatan()">📤 Bagikan ke Teman</button>
+        <button class="btn-wide clear-btn" onclick="hapusSemua()">🗑️ Hapus Semua Daftar</button>
+    </div>
 </div>
+
+<audio id="tingSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
 <script>
     window.onload = function() {
-        let savedTasks = JSON.parse(localStorage.getItem('superTasks')) || [];
+        let savedTasks = JSON.parse(localStorage.getItem('proTasks')) || [];
         savedTasks.forEach(task => renderTask(task));
         if (localStorage.getItem('theme') === 'dark') toggleDarkMode();
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
@@ -65,9 +74,19 @@
         if (input.value.trim() === "") return;
 
         let now = new Date();
-        let timeStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        let tglStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        let jamStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
         
-        let taskObj = { text: input.value, done: false, time: timeStr };
+        let taskObj = { 
+            text: input.value, 
+            done: false, 
+            time: jamStr,
+            date: tglStr 
+        };
+
+        // Mainkan suara Ting!
+        document.getElementById('tingSound').play();
+
         renderTask(taskObj);
         saveToLocal(taskObj);
         input.value = "";
@@ -78,7 +97,7 @@
         let li = document.createElement('li');
         li.innerHTML = `
             <div class="task-text ${taskObj.done ? 'done' : ''}" onclick="toggleDone(this, '${taskObj.text}')">
-                <span class="time-tag">Jam: ${taskObj.time}</span>
+                <span class="meta-tag">📅 ${taskObj.date} | 🕒 ${taskObj.time}</span>
                 ${taskObj.text}
             </div>
             <span class="delete-btn" onclick="hapusTugas(this, '${taskObj.text}')">×</span>
@@ -88,28 +107,35 @@
 
     function toggleDone(el, text) {
         el.classList.toggle('done');
-        let tasks = JSON.parse(localStorage.getItem('superTasks'));
+        let tasks = JSON.parse(localStorage.getItem('proTasks'));
         tasks.forEach(t => { if(t.text === text) t.done = !t.done; });
-        localStorage.setItem('superTasks', JSON.stringify(tasks));
+        localStorage.setItem('proTasks', JSON.stringify(tasks));
     }
 
     function saveToLocal(task) {
-        let tasks = JSON.parse(localStorage.getItem('superTasks')) || [];
+        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
         tasks.push(task);
-        localStorage.setItem('superTasks', JSON.stringify(tasks));
+        localStorage.setItem('proTasks', JSON.stringify(tasks));
     }
 
     function hapusTugas(element, text) {
         element.parentElement.remove();
-        let tasks = JSON.parse(localStorage.getItem('superTasks')) || [];
-        localStorage.setItem('superTasks', JSON.stringify(tasks.filter(t => t.text !== text)));
+        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        localStorage.setItem('proTasks', JSON.stringify(tasks.filter(t => t.text !== text)));
+    }
+
+    function hapusSemua() {
+        if (confirm("Yakin ingin menghapus seluruh daftar tugas?")) {
+            localStorage.removeItem('proTasks');
+            document.getElementById('taskList').innerHTML = "";
+        }
     }
 
     async function bagikanCatatan() {
-        let tasks = JSON.parse(localStorage.getItem('superTasks')) || [];
-        if (tasks.length === 0) return alert("Kosong!");
-        let teks = "Daftar Tugasku:\n" + tasks.map(t => `${t.done ? '[✔]' : '[ ]'} ${t.text} (${t.time})`).join("\n");
-        if (navigator.share) await navigator.share({ title: 'My Tasks', text: teks });
+        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        if (tasks.length === 0) return alert("Daftar kosong!");
+        let teks = "Daftar Tugas Pro Saya:\n" + tasks.map(t => `${t.done ? '[✔]' : '[ ]'} ${t.text} (${t.date} ${t.time})`).join("\n");
+        if (navigator.share) await navigator.share({ title: 'My Pro Tasks', text: teks });
     }
 </script>
 </body>
