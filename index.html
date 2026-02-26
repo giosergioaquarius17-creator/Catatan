@@ -1,9 +1,9 @@
-[Uploading Index.html…]()
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Rencana Saya</title>
+    <title>Catatan Saya</title>
     <link rel="manifest" href="manifest.json">
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; padding: 50px; background: #f4f4f9; }
@@ -27,12 +27,9 @@
 </div>
 
 <script>
-    // Load data saat buka app
     window.onload = function() {
         let savedTasks = JSON.parse(localStorage.getItem('myTasks')) || [];
         savedTasks.forEach(task => renderTask(task));
-        
-        // Daftarkan Service Worker untuk PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
