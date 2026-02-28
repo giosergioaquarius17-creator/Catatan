@@ -3,32 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tugasku Pro: Calendar Edition</title>
+    <title>Tugasku Pro: Notification Edition</title>
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --item: #fff; --danger: #ff4757; --accent: #2ed573; --primary: #1e90ff; }
         .dark-theme { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --item: #2d2d2d; --primary: #3742fa; }
         
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; transition: 0.3s; margin: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; transition: 0.3s; margin: 0; }
         .card { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 420px; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        
-        /* Progress Bar */
-        .progress-box { background: #e0e0e0; height: 10px; border-radius: 10px; margin-bottom: 25px; overflow: hidden; }
-        #progressBar { background: linear-gradient(90deg, var(--accent), #1dd1a1); height: 100%; width: 0%; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .progress-box { background: #e0e0e0; height: 10px; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+        #progressBar { background: linear-gradient(90deg, var(--accent), #1dd1a1); height: 100%; width: 0%; transition: 0.6s; }
 
-        /* Input Styling */
-        .input-area { background: var(--bg); padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+        .input-area { background: var(--bg); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #ddd; }
         .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
-        input, select { flex: 1; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; outline: none; background: var(--item); color: var(--text); font-size: 14px; }
-        input[type="date"] { flex: 0.8; }
-        .add-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .add-btn:active { transform: scale(0.98); }
+        input, select { flex: 1; padding: 10px; border: 1.5px solid #ddd; border-radius: 10px; outline: none; background: var(--item); color: var(--text); font-size: 13px; }
+        
+        .add-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .notif-btn { width: 100%; padding: 8px; background: #ff9f43; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 12px; }
 
-        /* Filter Tabs */
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tabs button { flex: 1; padding: 8px; border-radius: 20px; border: none; background: #ddd; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .tabs button.active { background: var(--primary); color: white; }
+        .date-header { margin: 25px 0 10px 0; font-size: 12px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .date-header::after { content: ""; flex: 1; height: 1px; background: #ddd; }
+        
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { background: var(--item); margin-bottom: 10px; padding: 15px; border-radius: 15px; display: flex; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid transparent; }
+        .task-content { flex: 1; cursor: pointer; }
+        .time-tag { font-size: 10px; color: var(--primary); font-weight: bold; display: block; }
+        .done { text-decoration: line-through; opacity: 0.5; }
+        .delete-btn { color: var(--danger); cursor: pointer; font-size: 20px; padding-left: 10px; }
+    </style>
+</head>
+<body>
 
-        /* Grouping & List */
-        .date-header { margin: 25px 0 10px 0; font-size:
+<div class="card">
+    <div class="header">
+        <h2 style="margin:0">Tugasku Pro 🚀</h2>
+        <button onclick="toggleDarkMode()" style="background:none; border:none; font-size:24px; cursor:pointer">🌓</button>
+    </div>
+
+    <div class="progress-box">
+        <div id="progressBar"></div>
+    </div>
+
+    <button id="notifBtn" class="notif-btn" onclick="requestNotifPermission()">🔔 Aktifkan Pengingat Notifikasi</button>
+
+    <div class="input-area">
+        <div class="input-row">
+            <input type="date" id="dateInput">
+            <input type="time" id="timeInput">
+        </div>
+        <div class="input-row">
+            <select id="priorityInput" style="flex: 0.4;">
+                <option value="low">🔵</option>
+                <option value="medium">🟡</option>
+                <option value="high">🔴</option>
+            </select>
+            <input type="text" id="taskInput" placeholder="Tulis rencana..." onkeypress="if(event.key==='Enter') tambahTugas()">
+        </div>
+        <button class="add-btn" onclick="tambahTugas()">Simpan Tugas</button>
+    </div>
+
+    <div id="taskListBody"></div>
+</div>
+
+<audio id="tingSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+<script>
+    const priorityColors = { high: "#ff4757", medium: "#ffa502", low: "#1e90ff" };
+
+    window.onload = () => {
+        const now = new Date();
+        document.getElementById('dateInput').value = now.toISOString().split('T')[0];
+        document.getElementById('timeInput').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        
+        if (Notification.permission === "granted") document.getElementById('notifBtn').style.display = 'none';
+        
+        render();
+        startNotifChecker();
+    };
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-theme');
+        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+    }
+
+    async function requestNotifPermission() {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+            alert("Notifikasi aktif!");
+            document.getElementById('notifBtn').style.display = 'none';
+        }
+    }
+
+    function tambahTugas() {
+        const tInput = document.getElementById('taskInput');
+        const dInput = document.getElementById('dateInput');
+        const tmInput = document.getElementById('timeInput');
+        const pInput = document.getElementById('priorityInput');
+
+        if (!tInput.value.trim()) return;
+
+        const newTask = {
+            id: Date.now(),
+            text: tInput.value,
+            date: dInput.value,
+            time: tmInput.value,
+            priority: pInput.value,
+            done: false,
+            notified: false // Agar tidak muncul notif berulang kali
+        };
+
+        const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        tasks.push(newTask);
+        localStorage.setItem('proTasks', JSON.stringify(tasks));
+
+        tInput.value = "";
+        render();
+    }
+
+    function render() {
+        const container = document.getElementById('taskListBody');
+        const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        container.innerHTML = "";
+
+        const grouped = tasks.reduce((acc, task) => {
+            if (!acc[task.date]) acc[task.date] = [];
+            acc[task.date].push(task);
+            return acc;
+        }, {});
+
+        Object.keys(grouped).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
+            const dateStr = new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' });
+            container.innerHTML += `<div class="date-header">${dateStr}</div>`;
+            
+            const ul = document.createElement('ul');
+            grouped[date].forEach(task => {
+                const li = document.createElement('li');
+                li.style.borderLeftColor = priorityColors[task.priority];
+                li.innerHTML = `
+                    <div class="task-content ${task.done ? 'done' : ''}" onclick="toggleStatus(${task.id})">
+                        <span class="time-tag">🔔 ${task.time}</span>
+                        <span class="text-val">${task.text}</span>
+                    </div>
+                    <span class="delete-btn" onclick="hapus(${task.id})">×</span>
+                `;
+                ul.appendChild(li);
+            });
+            container.appendChild(ul);
+        });
+
+        const done = tasks.filter(t => t.done).length;
+        document.getElementById('progressBar').style.width = tasks.length === 0 ? "0%" : (done/tasks.length*100) + "%";
+    }
+
+    // LOGIKA PENGINGAT (NOTIFIKASI)
+    function startNotifChecker() {
+        setInterval(() => {
+            const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+            const now = new Date();
+            const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+            const currentDate = now.toISOString().split('T')[0];
+
+            let changed = false;
+            tasks.forEach(task => {
+                if (!task.done && !task.notified && task.date === currentDate && task.time === currentTime) {
+                    
+                    // Kirim Notifikasi
+                    if (Notification.permission === "granted") {
+                        new Notification("Tugasku Pro 🚀", {
+                            body: `Waktunya: ${task.text}`,
+                            icon: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
+                        });
+                    }
+                    
+                    document.getElementById('tingSound').play().catch(()=>{});
+                    task.notified = true; // Tandai sudah dinotif agar tidak spam
+                    changed = true;
+                }
+            });
+
+            if (changed) localStorage.setItem('proTasks', JSON.stringify(tasks));
+        }, 1000 * 30); // Cek setiap 30 detik
+    }
+
+    function toggleStatus(id) {
+        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        tasks = tasks.map(t => t.id === id ? {...t, done: !t.done} : t);
+        localStorage.setItem('proTasks', JSON.stringify(tasks));
+        render();
+    }
+
+    function hapus(id) {
+        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        localStorage.setItem('proTasks', JSON.stringify(tasks.filter(t => t.id !== id)));
+        render();
+    }
+</script>
+</body>
+</html>
