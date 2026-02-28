@@ -4,45 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catatan Super Pro</title>
-    <link rel="manifest" href="manifest.json">
     <style>
-        :root { --bg: #f4f4f9; --card: #ffffff; --text: #333; --item: #fff; --danger: #e74c3c; }
+        :root { --bg: #f4f4f9; --card: #ffffff; --text: #333; --item: #fff; --danger: #e74c3c; --accent: #2ecc71; }
         .dark-theme { --bg: #1a1a1a; --card: #2d2d2d; --text: #f4f4f9; --item: #3d3d3d; }
         
-        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
-        .card { background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 380px; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; margin: 0; }
+        .card { background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 380px; margin-top: 20px; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .dark-mode-btn { cursor: pointer; font-size: 24px; background: none; border: none; }
+        .dark-mode-btn { cursor: pointer; font-size: 24px; background: none; border: none; outline: none; }
         
         .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
         input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; outline: none; background: var(--item); color: var(--text); }
-        button.add-btn { padding: 12px; cursor: pointer; background: #2ecc71; color: white; border: none; border-radius: 10px; font-weight: bold; }
+        button.add-btn { padding: 12px; cursor: pointer; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: bold; }
         
         ul { list-style: none; padding: 0; }
-        li { background: var(--item); margin-bottom: 12px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; position: relative; }
-        .task-text { flex: 1; }
+        li { background: var(--item); margin-bottom: 12px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s; }
+        .task-content { flex: 1; cursor: pointer; }
         .done { text-decoration: line-through; opacity: 0.5; }
-        .meta-tag { font-size: 9px; color: #888; display: block; margin-bottom: 4px; }
+        .meta-tag { font-size: 10px; color: #888; display: block; margin-bottom: 4px; }
         
-        .delete-btn { color: var(--danger); font-weight: bold; margin-left: 15px; font-size: 20px; }
+        .delete-btn { color: var(--danger); font-weight: bold; margin-left: 15px; font-size: 20px; cursor: pointer; padding: 5px; }
         .action-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
         .share-btn { background: #3498db; }
         .clear-btn { background: var(--danger); }
         .btn-wide { width: 100%; padding: 12px; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
-<body id="bodyTag">
+<body>
 
 <div class="card">
     <div class="header">
         <h3>Tugasku Pro 🚀</h3>
-        <button class="dark-mode-btn" onclick="toggleDarkMode()">🌓</button>
+        <button class="dark-mode-btn" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">🌓</button>
     </div>
 
     <div class="input-group">
-        <input type="text" id="taskInput" placeholder="Tulis rencana baru...">
-        <button class="add-btn" onclick="tambahTugas()">Tambah</button>
+    <select id="priorityInput" style="padding: 10px; border-radius: 10px; border: 1px solid #ddd; background: var(--item); color: var(--text);">
+        <option value="low">🔵 Rendah</option>
+        <option value="medium">🟡 Sedang</option>
+        <option value="high">🔴 Tinggi</option>
+    </select>
+    <input type="text" id="taskInput" placeholder="Tulis rencana baru..." onkeypress="handleKeyPress(event)">
+    <button class="add-btn" onclick="tambahTugas()">Tambah</button>
     </div>
     
     <ul id="taskList"></ul>
@@ -56,36 +60,44 @@
 <audio id="tingSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
 <script>
-    window.onload = function() {
-        let savedTasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+    // Ambil data saat pertama kali load
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTasks = JSON.parse(localStorage.getItem('proTasks')) || [];
         savedTasks.forEach(task => renderTask(task));
-        if (localStorage.getItem('theme') === 'dark') toggleDarkMode();
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-    };
+        
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log("SW Load Failed", err));
+        }
+    });
 
     function toggleDarkMode() {
         document.body.classList.toggle('dark-theme');
-        let theme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
-        localStorage.setItem('theme', theme);
+        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
+    }
+
+    function handleKeyPress(e) {
+        if (e.key === 'Enter') tambahTugas();
     }
 
     function tambahTugas() {
-        let input = document.getElementById('taskInput');
-        if (input.value.trim() === "") return;
+        const input = document.getElementById('taskInput');
+        const val = input.value.trim();
+        if (!val) return;
 
-        let now = new Date();
-        let tglStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-        let jamStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        
-        let taskObj = { 
-            text: input.value, 
+        const now = new Date();
+        const taskObj = { 
+            id: Date.now(), // ID Unik
+            text: val, 
             done: false, 
-            time: jamStr,
-            date: tglStr 
+            time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            date: now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) 
         };
 
-        // Mainkan suara Ting!
-        document.getElementById('tingSound').play();
+        // Suara
+        document.getElementById('tingSound').play().catch(() => {});
 
         renderTask(taskObj);
         saveToLocal(taskObj);
@@ -93,35 +105,47 @@
     }
 
     function renderTask(taskObj) {
-        let list = document.getElementById('taskList');
-        let li = document.createElement('li');
+        const list = document.getElementById('taskList');
+        const li = document.createElement('li');
+        li.setAttribute('data-id', taskObj.id);
+        
         li.innerHTML = `
-            <div class="task-text ${taskObj.done ? 'done' : ''}" onclick="toggleDone(this, '${taskObj.text}')">
+            <div class="task-content ${taskObj.done ? 'done' : ''}" onclick="toggleDone(${taskObj.id})">
                 <span class="meta-tag">📅 ${taskObj.date} | 🕒 ${taskObj.time}</span>
-                ${taskObj.text}
+                <span class="text-val"></span>
             </div>
-            <span class="delete-btn" onclick="hapusTugas(this, '${taskObj.text}')">×</span>
+            <span class="delete-btn" onclick="hapusTugas(${taskObj.id})">×</span>
         `;
+        
+        // Gunakan textContent untuk keamanan dari XSS
+        li.querySelector('.text-val').textContent = taskObj.text;
         list.appendChild(li);
     }
 
-    function toggleDone(el, text) {
-        el.classList.toggle('done');
-        let tasks = JSON.parse(localStorage.getItem('proTasks'));
-        tasks.forEach(t => { if(t.text === text) t.done = !t.done; });
+    function toggleDone(id) {
+        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        tasks = tasks.map(t => {
+            if (t.id === id) t.done = !t.done;
+            return t;
+        });
         localStorage.setItem('proTasks', JSON.stringify(tasks));
+        
+        // Update tampilan tanpa reload
+        const el = document.querySelector(`li[data-id="${id}"] .task-content`);
+        if (el) el.classList.toggle('done');
     }
 
     function saveToLocal(task) {
-        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
         tasks.push(task);
         localStorage.setItem('proTasks', JSON.stringify(tasks));
     }
 
-    function hapusTugas(element, text) {
-        element.parentElement.remove();
-        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
-        localStorage.setItem('proTasks', JSON.stringify(tasks.filter(t => t.text !== text)));
+    function hapusTugas(id) {
+        const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        const filtered = tasks.filter(t => t.id !== id);
+        localStorage.setItem('proTasks', JSON.stringify(filtered));
+        document.querySelector(`li[data-id="${id}"]`).remove();
     }
 
     function hapusSemua() {
@@ -132,10 +156,19 @@
     }
 
     async function bagikanCatatan() {
-        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
+        const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
         if (tasks.length === 0) return alert("Daftar kosong!");
-        let teks = "Daftar Tugas Pro Saya:\n" + tasks.map(t => `${t.done ? '[✔]' : '[ ]'} ${t.text} (${t.date} ${t.time})`).join("\n");
-        if (navigator.share) await navigator.share({ title: 'My Pro Tasks', text: teks });
+        
+        const teks = "Daftar Tugas Pro Saya:\n" + 
+                     tasks.map(t => `${t.done ? '[✔]' : '[ ]'} ${t.text}`).join("\n");
+        
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: 'Tugasku Pro', text: teks });
+            } catch (err) { console.log("Share failed", err); }
+        } else {
+            alert("Fitur share tidak didukung di browser ini. Kamu bisa menyalin teks secara manual.");
+        }
     }
 </script>
 </body>
