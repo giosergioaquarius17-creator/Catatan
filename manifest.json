@@ -1,13 +1,14 @@
 {
-  "name": "Daftar Tugas Pintar",
-  "short_name": "Tugasku",
+  "name": "Tugasku Pro Ultimate",
+  "short_name": "TugaskuPro",
+  "description": "Aplikasi Catatan Tugas Pro dengan Notifikasi dan Kalender",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#f4f4f9",
-  "theme_color": "#2ecc71",
+  "background_color": "#ffffff",
+  "theme_color": "#1e90ff",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/906/906334.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/190/190411.png",
       "sizes": "512x512",
       "type": "image/png"
     }
