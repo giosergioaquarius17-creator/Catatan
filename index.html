@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tugasku Pro: Notification Edition</title>
+    <title>Tugasku Pro: Ultimate Edition</title>
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --item: #fff; --danger: #ff4757; --accent: #2ed573; --primary: #1e90ff; }
         .dark-theme { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --item: #2d2d2d; --primary: #3742fa; }
         
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; transition: 0.3s; margin: 0; }
-        .card { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 420px; }
+        .card { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .progress-box { background: #e0e0e0; height: 10px; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
@@ -22,13 +22,22 @@
         .add-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
         .notif-btn { width: 100%; padding: 8px; background: #ff9f43; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 12px; }
 
-        .date-header { margin: 25px 0 10px 0; font-size: 12px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .date-header { margin: 25px 0 10px 0; font-size: 12px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
         .date-header::after { content: ""; flex: 1; height: 1px; background: #ddd; }
         
         ul { list-style: none; padding: 0; margin: 0; }
-        li { background: var(--item); margin-bottom: 10px; padding: 15px; border-radius: 15px; display: flex; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid transparent; }
+        li { background: var(--item); margin-bottom: 12px; padding: 15px; border-radius: 15px; display: flex; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid transparent; }
         .task-content { flex: 1; cursor: pointer; }
-        .time-tag { font-size: 10px; color: var(--primary); font-weight: bold; display: block; }
+        
+        /* Category Label */
+        .cat-label { font-size: 9px; padding: 2px 8px; border-radius: 10px; color: white; font-weight: bold; margin-bottom: 5px; display: inline-block; text-transform: uppercase; }
+        .cat-work { background: #5758bb; }
+        .cat-home { background: #eb4d4b; }
+        .cat-hobby { background: #6ab04c; }
+        .cat-shop { background: #f0932b; }
+
+        .time-tag { font-size: 10px; color: #888; font-weight: bold; margin-left: 5px; }
+        .text-val { display: block; font-weight: 500; margin-top: 2px; }
         .done { text-decoration: line-through; opacity: 0.5; }
         .delete-btn { color: var(--danger); cursor: pointer; font-size: 20px; padding-left: 10px; }
     </style>
@@ -45,7 +54,7 @@
         <div id="progressBar"></div>
     </div>
 
-    <button id="notifBtn" class="notif-btn" onclick="requestNotifPermission()">🔔 Aktifkan Pengingat Notifikasi</button>
+    <button id="notifBtn" class="notif-btn" onclick="requestNotifPermission()">🔔 Aktifkan Notifikasi</button>
 
     <div class="input-area">
         <div class="input-row">
@@ -53,12 +62,20 @@
             <input type="time" id="timeInput">
         </div>
         <div class="input-row">
+            <select id="categoryInput">
+                <option value="work">💼 Kerja</option>
+                <option value="home">🏠 Rumah</option>
+                <option value="hobby">🎨 Hobi</option>
+                <option value="shop">🛒 Belanja</option>
+            </select>
             <select id="priorityInput" style="flex: 0.4;">
                 <option value="low">🔵</option>
                 <option value="medium">🟡</option>
                 <option value="high">🔴</option>
             </select>
-            <input type="text" id="taskInput" placeholder="Tulis rencana..." onkeypress="if(event.key==='Enter') tambahTugas()">
+        </div>
+        <div class="input-row">
+            <input type="text" id="taskInput" placeholder="Apa rencanamu hari ini?" onkeypress="if(event.key==='Enter') tambahTugas()">
         </div>
         <button class="add-btn" onclick="tambahTugas()">Simpan Tugas</button>
     </div>
@@ -70,14 +87,13 @@
 
 <script>
     const priorityColors = { high: "#ff4757", medium: "#ffa502", low: "#1e90ff" };
+    const categoryNames = { work: "Pekerjaan", home: "Rumah", hobby: "Hobi", shop: "Belanja" };
 
     window.onload = () => {
         const now = new Date();
         document.getElementById('dateInput').value = now.toISOString().split('T')[0];
-        document.getElementById('timeInput').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-        
+        document.getElementById('timeInput').value = now.getHours().toString().padStart(2, '0') + ":00";
         if (Notification.permission === "granted") document.getElementById('notifBtn').style.display = 'none';
-        
         render();
         startNotifChecker();
     };
@@ -89,10 +105,7 @@
 
     async function requestNotifPermission() {
         const permission = await Notification.requestPermission();
-        if (permission === "granted") {
-            alert("Notifikasi aktif!");
-            document.getElementById('notifBtn').style.display = 'none';
-        }
+        if (permission === "granted") document.getElementById('notifBtn').style.display = 'none';
     }
 
     function tambahTugas() {
@@ -100,6 +113,7 @@
         const dInput = document.getElementById('dateInput');
         const tmInput = document.getElementById('timeInput');
         const pInput = document.getElementById('priorityInput');
+        const cInput = document.getElementById('categoryInput');
 
         if (!tInput.value.trim()) return;
 
@@ -109,8 +123,9 @@
             date: dInput.value,
             time: tmInput.value,
             priority: pInput.value,
+            category: cInput.value,
             done: false,
-            notified: false // Agar tidak muncul notif berulang kali
+            notified: false
         };
 
         const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
@@ -142,7 +157,8 @@
                 li.style.borderLeftColor = priorityColors[task.priority];
                 li.innerHTML = `
                     <div class="task-content ${task.done ? 'done' : ''}" onclick="toggleStatus(${task.id})">
-                        <span class="time-tag">🔔 ${task.time}</span>
+                        <span class="cat-label cat-${task.category}">${categoryNames[task.category]}</span>
+                        <span class="time-tag">⏰ ${task.time}</span>
                         <span class="text-val">${task.text}</span>
                     </div>
                     <span class="delete-btn" onclick="hapus(${task.id})">×</span>
@@ -156,7 +172,6 @@
         document.getElementById('progressBar').style.width = tasks.length === 0 ? "0%" : (done/tasks.length*100) + "%";
     }
 
-    // LOGIKA PENGINGAT (NOTIFIKASI)
     function startNotifChecker() {
         setInterval(() => {
             const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
@@ -167,23 +182,22 @@
             let changed = false;
             tasks.forEach(task => {
                 if (!task.done && !task.notified && task.date === currentDate && task.time === currentTime) {
-                    
-                    // Kirim Notifikasi
                     if (Notification.permission === "granted") {
-                        new Notification("Tugasku Pro 🚀", {
-                            body: `Waktunya: ${task.text}`,
+                        new Notification(`Tugasku Pro [${categoryNames[task.category]}]`, {
+                            body: `Waktunya mengerjakan: ${task.text}`,
                             icon: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
                         });
                     }
-                    
                     document.getElementById('tingSound').play().catch(()=>{});
-                    task.notified = true; // Tandai sudah dinotif agar tidak spam
+                    task.notified = true;
                     changed = true;
                 }
             });
-
-            if (changed) localStorage.setItem('proTasks', JSON.stringify(tasks));
-        }, 1000 * 30); // Cek setiap 30 detik
+            if (changed) {
+                localStorage.setItem('proTasks', JSON.stringify(tasks));
+                render();
+            }
+        }, 30000);
     }
 
     function toggleStatus(id) {
