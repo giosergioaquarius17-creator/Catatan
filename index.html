@@ -3,53 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tugas Gio_017: Grid Edition</title>
+    <link rel="manifest" href="manifest.json">
+    <title>Tugasku Pro: Ultimate Grid</title>
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --item: #fff; --danger: #ff4757; --accent: #2ed573; --primary: #1e90ff; }
         .dark-theme { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --item: #2d2d2d; --primary: #3742fa; }
         
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; transition: 0.3s; margin: 0; }
-        .container { width: 100%; max-width: 900px; } /* Lebar diperbesar untuk grid */
+        .container { width: 100%; max-width: 900px; }
         
         .card-main { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        /* Progress Bar */
         .progress-box { background: #e0e0e0; height: 10px; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: linear-gradient(90deg, var(--accent), #1dd1a1); height: 100%; width: 0%; transition: 0.6s; }
 
+        /* Input Styling */
         .input-area { background: var(--bg); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #ddd; }
         .input-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
         input, select { flex: 1; min-width: 120px; padding: 10px; border: 1.5px solid #ddd; border-radius: 10px; outline: none; background: var(--item); color: var(--text); font-size: 13px; }
         
         .add-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .notif-btn { width: 100%; padding: 8px; background: #ff9f43; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 11px; }
+        .notif-btn { width: 100%; padding: 10px; background: #ff9f43; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; width: 100%; }
 
+        /* Layout Grid (Sesuai Gambar 2) */
         .date-header { margin: 30px 0 15px 0; font-size: 14px; font-weight: 800; color: var(--primary); text-transform: uppercase; border-left: 4px solid var(--primary); padding-left: 10px; }
-        
-        /* TAMPILAN GRID SEPERTI GAMBAR 2 */
-        .task-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-            gap: 15px; 
-            padding: 0; 
-            list-style: none; 
-        }
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; padding: 0; list-style: none; }
 
         .task-item { 
-            background: var(--card); 
-            padding: 18px; 
-            border-radius: 18px; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
-            border-top: 6px solid transparent; 
-            position: relative;
-            transition: 0.3s;
+            background: var(--card); padding: 20px; border-radius: 20px; display: flex; flex-direction: column; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-top: 6px solid transparent; position: relative; transition: 0.3s;
         }
-        
         .task-item:hover { transform: translateY(-5px); }
 
-        .cat-label { font-size: 10px; padding: 3px 10px; border-radius: 8px; color: white; font-weight: bold; align-self: flex-start; margin-bottom: 10px; }
+        /* Kategori Labels */
+        .cat-label { font-size: 10px; padding: 3px 10px; border-radius: 8px; color: white; font-weight: bold; align-self: flex-start; margin-bottom: 10px; text-transform: uppercase; }
         .cat-work { background: #5758bb; }
         .cat-home { background: #eb4d4b; }
         .cat-hobby { background: #6ab04c; }
@@ -57,19 +46,13 @@
 
         .task-content { flex: 1; cursor: pointer; }
         .time-tag { font-size: 11px; color: #888; font-weight: bold; display: block; margin-bottom: 5px; }
-        .text-val { font-weight: 600; font-size: 15px; line-height: 1.4; }
+        .text-val { font-weight: 600; font-size: 16px; line-height: 1.4; }
         .done { text-decoration: line-through; opacity: 0.5; }
 
-        .delete-btn { 
-            position: absolute; top: 10px; right: 10px; 
-            color: var(--danger); cursor: pointer; font-size: 18px; 
-            opacity: 0.3; transition: 0.2s;
-        }
+        .delete-btn { position: absolute; top: 10px; right: 12px; color: var(--danger); cursor: pointer; font-size: 22px; opacity: 0.2; transition: 0.2s; }
         .task-item:hover .delete-btn { opacity: 1; }
 
-        @media (max-width: 500px) {
-            .task-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 500px) { .task-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -81,11 +64,9 @@
             <button onclick="toggleDarkMode()" style="background:none; border:none; font-size:24px; cursor:pointer">🌓</button>
         </div>
 
-        <div class="progress-box">
-            <div id="progressBar"></div>
-        </div>
+        <div class="progress-box"><div id="progressBar"></div></div>
 
-        <button id="notifBtn" class="notif-btn" onclick="requestNotifPermission()">🔔 Aktifkan Pengingat</button>
+        <button id="notifBtn" class="notif-btn" onclick="requestNotifPermission()">🔔 Aktifkan Notifikasi Pengingat</button>
 
         <div class="input-area">
             <div class="input-row">
@@ -106,9 +87,9 @@
                 </select>
             </div>
             <div class="input-row">
-                <input type="text" id="taskInput" placeholder="Apa rencana besarmu?" onkeypress="if(event.key==='Enter') tambahTugas()">
+                <input type="text" id="taskInput" placeholder="Tulis rencana baru..." onkeypress="if(event.key==='Enter') tambahTugas()">
             </div>
-            <button class="add-btn" onclick="tambahTugas()">Simpan ke Daftar</button>
+            <button class="add-btn" onclick="tambahTugas()">Simpan Tugas</button>
         </div>
     </div>
 
@@ -121,11 +102,25 @@
     const priorityColors = { high: "#ff4757", medium: "#ffa502", low: "#1e90ff" };
     const categoryNames = { work: "Pekerjaan", home: "Rumah", hobby: "Hobi", shop: "Belanja" };
 
+    // PERBAIKAN WINDOW ONLOAD
     window.onload = () => {
+        // Daftar Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(() => console.log("Service Worker Terdaftar!"))
+            .catch(err => console.log("Gagal Daftar SW", err));
+        }
+
+        // Set Default Input
         const now = new Date();
         document.getElementById('dateInput').value = now.toISOString().split('T')[0];
         document.getElementById('timeInput').value = now.getHours().toString().padStart(2, '0') + ":00";
-        if (Notification.permission === "granted") document.getElementById('notifBtn').style.display = 'none';
+        
+        // Sembunyikan tombol jika izin sudah ada
+        if (Notification.permission === "granted") {
+            document.getElementById('notifBtn').style.display = 'none';
+        }
+        
         render();
         startNotifChecker();
     };
@@ -166,6 +161,7 @@
         const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
         container.innerHTML = "";
 
+        // Pengelompokan
         const grouped = tasks.reduce((acc, task) => {
             if (!acc[task.date]) acc[task.date] = [];
             acc[task.date].push(task);
@@ -211,7 +207,7 @@
             tasks.forEach(task => {
                 if (!task.done && !task.notified && task.date === currentDate && task.time === currentTime) {
                     if (Notification.permission === "granted") {
-                        new Notification(`Tugasku Pro`, { body: task.text });
+                        new Notification(`Tugasku Pro [${categoryNames[task.category]}]`, { body: task.text });
                     }
                     document.getElementById('tingSound').play().catch(()=>{});
                     task.notified = true;
