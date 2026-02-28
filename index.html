@@ -3,81 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tugasku Pro: Ultimate Edition</title>
+    <title>Tugasku Pro: Grid Edition</title>
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --item: #fff; --danger: #ff4757; --accent: #2ed573; --primary: #1e90ff; }
         .dark-theme { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --item: #2d2d2d; --primary: #3742fa; }
         
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; transition: 0.3s; margin: 0; }
-        .card { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        .container { width: 100%; max-width: 900px; } /* Lebar diperbesar untuk grid */
+        
+        .card-main { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); margin-bottom: 30px; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .progress-box { background: #e0e0e0; height: 10px; border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
         #progressBar { background: linear-gradient(90deg, var(--accent), #1dd1a1); height: 100%; width: 0%; transition: 0.6s; }
 
         .input-area { background: var(--bg); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #ddd; }
-        .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
-        input, select { flex: 1; padding: 10px; border: 1.5px solid #ddd; border-radius: 10px; outline: none; background: var(--item); color: var(--text); font-size: 13px; }
+        .input-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+        input, select { flex: 1; min-width: 120px; padding: 10px; border: 1.5px solid #ddd; border-radius: 10px; outline: none; background: var(--item); color: var(--text); font-size: 13px; }
         
         .add-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .notif-btn { width: 100%; padding: 8px; background: #ff9f43; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 12px; }
+        .notif-btn { width: 100%; padding: 8px; background: #ff9f43; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 11px; }
 
-        .date-header { margin: 25px 0 10px 0; font-size: 12px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
-        .date-header::after { content: ""; flex: 1; height: 1px; background: #ddd; }
+        .date-header { margin: 30px 0 15px 0; font-size: 14px; font-weight: 800; color: var(--primary); text-transform: uppercase; border-left: 4px solid var(--primary); padding-left: 10px; }
         
-        ul { list-style: none; padding: 0; margin: 0; }
-        li { background: var(--item); margin-bottom: 12px; padding: 15px; border-radius: 15px; display: flex; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid transparent; }
-        .task-content { flex: 1; cursor: pointer; }
+        /* TAMPILAN GRID SEPERTI GAMBAR 2 */
+        .task-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+            gap: 15px; 
+            padding: 0; 
+            list-style: none; 
+        }
+
+        .task-item { 
+            background: var(--card); 
+            padding: 18px; 
+            border-radius: 18px; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); 
+            border-top: 6px solid transparent; 
+            position: relative;
+            transition: 0.3s;
+        }
         
-        /* Category Label */
-        .cat-label { font-size: 9px; padding: 2px 8px; border-radius: 10px; color: white; font-weight: bold; margin-bottom: 5px; display: inline-block; text-transform: uppercase; }
+        .task-item:hover { transform: translateY(-5px); }
+
+        .cat-label { font-size: 10px; padding: 3px 10px; border-radius: 8px; color: white; font-weight: bold; align-self: flex-start; margin-bottom: 10px; }
         .cat-work { background: #5758bb; }
         .cat-home { background: #eb4d4b; }
         .cat-hobby { background: #6ab04c; }
         .cat-shop { background: #f0932b; }
 
-        .time-tag { font-size: 10px; color: #888; font-weight: bold; margin-left: 5px; }
-        .text-val { display: block; font-weight: 500; margin-top: 2px; }
+        .task-content { flex: 1; cursor: pointer; }
+        .time-tag { font-size: 11px; color: #888; font-weight: bold; display: block; margin-bottom: 5px; }
+        .text-val { font-weight: 600; font-size: 15px; line-height: 1.4; }
         .done { text-decoration: line-through; opacity: 0.5; }
-        .delete-btn { color: var(--danger); cursor: pointer; font-size: 20px; padding-left: 10px; }
+
+        .delete-btn { 
+            position: absolute; top: 10px; right: 10px; 
+            color: var(--danger); cursor: pointer; font-size: 18px; 
+            opacity: 0.3; transition: 0.2s;
+        }
+        .task-item:hover .delete-btn { opacity: 1; }
+
+        @media (max-width: 500px) {
+            .task-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="header">
-        <h2 style="margin:0">Tugasku Pro 🚀</h2>
-        <button onclick="toggleDarkMode()" style="background:none; border:none; font-size:24px; cursor:pointer">🌓</button>
-    </div>
-
-    <div class="progress-box">
-        <div id="progressBar"></div>
-    </div>
-
-    <button id="notifBtn" class="notif-btn" onclick="requestNotifPermission()">🔔 Aktifkan Notifikasi</button>
-
-    <div class="input-area">
-        <div class="input-row">
-            <input type="date" id="dateInput">
-            <input type="time" id="timeInput">
+<div class="container">
+    <div class="card-main">
+        <div class="header">
+            <h2 style="margin:0">Tugasku Pro 🚀</h2>
+            <button onclick="toggleDarkMode()" style="background:none; border:none; font-size:24px; cursor:pointer">🌓</button>
         </div>
-        <div class="input-row">
-            <select id="categoryInput">
-                <option value="work">💼 Kerja</option>
-                <option value="home">🏠 Rumah</option>
-                <option value="hobby">🎨 Hobi</option>
-                <option value="shop">🛒 Belanja</option>
-            </select>
-            <select id="priorityInput" style="flex: 0.4;">
-                <option value="low">🔵</option>
-                <option value="medium">🟡</option>
-                <option value="high">🔴</option>
-            </select>
+
+        <div class="progress-box">
+            <div id="progressBar"></div>
         </div>
-        <div class="input-row">
-            <input type="text" id="taskInput" placeholder="Apa rencanamu hari ini?" onkeypress="if(event.key==='Enter') tambahTugas()">
+
+        <button id="notifBtn" class="notif-btn" onclick="requestNotifPermission()">🔔 Aktifkan Pengingat</button>
+
+        <div class="input-area">
+            <div class="input-row">
+                <input type="date" id="dateInput">
+                <input type="time" id="timeInput">
+            </div>
+            <div class="input-row">
+                <select id="categoryInput">
+                    <option value="work">💼 Kerja</option>
+                    <option value="home">🏠 Rumah</option>
+                    <option value="hobby">🎨 Hobi</option>
+                    <option value="shop">🛒 Belanja</option>
+                </select>
+                <select id="priorityInput">
+                    <option value="low">🔵 Rendah</option>
+                    <option value="medium">🟡 Sedang</option>
+                    <option value="high">🔴 Tinggi</option>
+                </select>
+            </div>
+            <div class="input-row">
+                <input type="text" id="taskInput" placeholder="Apa rencana besarmu?" onkeypress="if(event.key==='Enter') tambahTugas()">
+            </div>
+            <button class="add-btn" onclick="tambahTugas()">Simpan ke Daftar</button>
         </div>
-        <button class="add-btn" onclick="tambahTugas()">Simpan Tugas</button>
     </div>
 
     <div id="taskListBody"></div>
@@ -110,28 +142,21 @@
 
     function tambahTugas() {
         const tInput = document.getElementById('taskInput');
-        const dInput = document.getElementById('dateInput');
-        const tmInput = document.getElementById('timeInput');
-        const pInput = document.getElementById('priorityInput');
-        const cInput = document.getElementById('categoryInput');
-
         if (!tInput.value.trim()) return;
 
         const newTask = {
             id: Date.now(),
             text: tInput.value,
-            date: dInput.value,
-            time: tmInput.value,
-            priority: pInput.value,
-            category: cInput.value,
-            done: false,
-            notified: false
+            date: document.getElementById('dateInput').value,
+            time: document.getElementById('timeInput').value,
+            priority: document.getElementById('priorityInput').value,
+            category: document.getElementById('categoryInput').value,
+            done: false, notified: false
         };
 
         const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
         tasks.push(newTask);
         localStorage.setItem('proTasks', JSON.stringify(tasks));
-
         tInput.value = "";
         render();
     }
@@ -148,24 +173,27 @@
         }, {});
 
         Object.keys(grouped).sort((a,b) => new Date(b) - new Date(a)).forEach(date => {
-            const dateStr = new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' });
+            const dateStr = new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
             container.innerHTML += `<div class="date-header">${dateStr}</div>`;
             
-            const ul = document.createElement('ul');
+            const grid = document.createElement('ul');
+            grid.className = 'task-grid';
+
             grouped[date].forEach(task => {
                 const li = document.createElement('li');
-                li.style.borderLeftColor = priorityColors[task.priority];
+                li.className = 'task-item';
+                li.style.borderTopColor = priorityColors[task.priority];
                 li.innerHTML = `
+                    <span class="delete-btn" onclick="hapus(${task.id})">×</span>
                     <div class="task-content ${task.done ? 'done' : ''}" onclick="toggleStatus(${task.id})">
                         <span class="cat-label cat-${task.category}">${categoryNames[task.category]}</span>
-                        <span class="time-tag">⏰ ${task.time}</span>
+                        <span class="time-tag">⏰ Pukul ${task.time}</span>
                         <span class="text-val">${task.text}</span>
                     </div>
-                    <span class="delete-btn" onclick="hapus(${task.id})">×</span>
                 `;
-                ul.appendChild(li);
+                grid.appendChild(li);
             });
-            container.appendChild(ul);
+            container.appendChild(grid);
         });
 
         const done = tasks.filter(t => t.done).length;
@@ -183,20 +211,14 @@
             tasks.forEach(task => {
                 if (!task.done && !task.notified && task.date === currentDate && task.time === currentTime) {
                     if (Notification.permission === "granted") {
-                        new Notification(`Tugasku Pro [${categoryNames[task.category]}]`, {
-                            body: `Waktunya mengerjakan: ${task.text}`,
-                            icon: "https://cdn-icons-png.flaticon.com/512/190/190411.png"
-                        });
+                        new Notification(`Tugasku Pro`, { body: task.text });
                     }
                     document.getElementById('tingSound').play().catch(()=>{});
                     task.notified = true;
                     changed = true;
                 }
             });
-            if (changed) {
-                localStorage.setItem('proTasks', JSON.stringify(tasks));
-                render();
-            }
+            if (changed) { localStorage.setItem('proTasks', JSON.stringify(tasks)); render(); }
         }, 30000);
     }
 
