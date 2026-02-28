@@ -3,215 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catatan Super Pro - Kalender</title>
+    <title>Tugasku Pro: Calendar Edition</title>
     <style>
-        :root { --bg: #f4f4f9; --card: #ffffff; --text: #333; --item: #fff; --danger: #e74c3c; --accent: #2ecc71; --gray: #888; }
-        .dark-theme { --bg: #1a1a1a; --card: #2d2d2d; --text: #f4f4f9; --item: #3d3d3d; --gray: #aaa; }
+        :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --item: #fff; --danger: #ff4757; --accent: #2ed573; --primary: #1e90ff; }
+        .dark-theme { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --item: #2d2d2d; --primary: #3742fa; }
         
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; margin: 0; }
-        .card { background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 400px; margin-top: 20px; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; padding: 20px; transition: 0.3s; margin: 0; }
+        .card { background: var(--card); padding: 25px; border-radius: 24px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 420px; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .dark-mode-btn { cursor: pointer; font-size: 24px; background: none; border: none; outline: none; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         
         /* Progress Bar */
-        .progress-container { background: #eee; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
-        #progressBar { background: var(--accent); height: 100%; width: 0%; transition: 0.5s ease; }
+        .progress-box { background: #e0e0e0; height: 10px; border-radius: 10px; margin-bottom: 25px; overflow: hidden; }
+        #progressBar { background: linear-gradient(90deg, var(--accent), #1dd1a1); height: 100%; width: 0%; transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .input-row { display: flex; gap: 10px; }
-        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 10px; outline: none; background: var(--item); color: var(--text); }
-        select { padding: 10px; border-radius: 10px; border: 1px solid #ddd; background: var(--item); color: var(--text); }
-        button.add-btn { padding: 12px; cursor: pointer; background: var(--accent); color: white; border: none; border-radius: 10px; font-weight: bold; width: 100%; }
-        
-        /* Tab Filter */
-        .filter-tabs { display: flex; gap: 5px; margin-bottom: 20px; }
-        .filter-tabs button { flex: 1; padding: 8px; border: none; border-radius: 8px; cursor: pointer; background: #ddd; font-size: 12px; }
-        .filter-tabs button.active { background: #3498db; color: white; }
+        /* Input Styling */
+        .input-area { background: var(--bg); padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+        .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        input, select { flex: 1; padding: 12px; border: 1.5px solid #ddd; border-radius: 10px; outline: none; background: var(--item); color: var(--text); font-size: 14px; }
+        input[type="date"] { flex: 0.8; }
+        .add-btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .add-btn:active { transform: scale(0.98); }
 
-        /* Grouping Style */
-        .date-group-header { margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid var(--accent); font-weight: bold; color: var(--accent); font-size: 14px; }
-        
-        ul { list-style: none; padding: 0; }
-        li { background: var(--item); margin-bottom: 10px; padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .task-content { flex: 1; cursor: pointer; }
-        .done { text-decoration: line-through; opacity: 0.5; }
-        .meta-tag { font-size: 10px; color: var(--gray); display: block; margin-bottom: 2px; }
-        .delete-btn { color: var(--danger); font-weight: bold; margin-left: 15px; font-size: 20px; cursor: pointer; }
+        /* Filter Tabs */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tabs button { flex: 1; padding: 8px; border-radius: 20px; border: none; background: #ddd; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .tabs button.active { background: var(--primary); color: white; }
 
-        .action-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        .btn-wide { width: 100%; padding: 12px; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .share-btn { background: #3498db; }
-        .clear-btn { background: var(--danger); }
-    </style>
-</head>
-<body>
-
-<div class="card">
-    <div class="header">
-        <h3>Tugasku Pro 🚀</h3>
-        <button class="dark-mode-btn" onclick="toggleDarkMode()">🌓</button>
-    </div>
-
-    <div class="progress-container">
-        <div id="progressBar"></div>
-    </div>
-
-    <div class="input-group">
-        <div class="input-row">
-            <select id="priorityInput">
-                <option value="low">🔵</option>
-                <option value="medium">🟡</option>
-                <option value="high">🔴</option>
-            </select>
-            <input type="text" id="taskInput" placeholder="Apa rencanamu?" onkeypress="handleKeyPress(event)">
-        </div>
-        <button class="add-btn" onclick="tambahTugas()">Tambah Tugas</button>
-    </div>
-
-    <div class="filter-tabs" id="filterTabs">
-        <button class="active" onclick="changeFilter('all')">Semua</button>
-        <button onclick="changeFilter('active')">Belum</button>
-        <button onclick="changeFilter('completed')">Selesai</button>
-    </div>
-    
-    <div id="taskListContainer"></div>
-
-    <div class="action-btns">
-        <button class="btn-wide share-btn" onclick="bagikanCatatan()">📤 Bagikan Ringkasan</button>
-        <button class="btn-wide clear-btn" onclick="hapusSemua()">🗑️ Bersihkan Semua</button>
-    </div>
-</div>
-
-<audio id="tingSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
-
-<script>
-    const priorityColors = { high: "#e74c3c", medium: "#f1c40f", low: "#3498db" };
-    let currentFilter = 'all';
-
-    document.addEventListener('DOMContentLoaded', () => {
-        renderAll();
-        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-theme');
-    });
-
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-theme');
-        localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');
-    }
-
-    function handleKeyPress(e) { if (e.key === 'Enter') tambahTugas(); }
-
-    function changeFilter(f) {
-        currentFilter = f;
-        document.querySelectorAll('.filter-tabs button').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-        renderAll();
-    }
-
-    function updateProgress(tasks) {
-        const completed = tasks.filter(t => t.done).length;
-        const percent = tasks.length === 0 ? 0 : (completed / tasks.length) * 100;
-        document.getElementById('progressBar').style.width = percent + "%";
-    }
-
-    function tambahTugas() {
-        const input = document.getElementById('taskInput');
-        const priority = document.getElementById('priorityInput').value;
-        if (!input.value.trim()) return;
-
-        const now = new Date();
-        const taskObj = { 
-            id: Date.now(),
-            text: input.value, 
-            done: false, 
-            priority: priority,
-            time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-            date: now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) 
-        };
-
-        const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
-        tasks.push(taskObj);
-        localStorage.setItem('proTasks', JSON.stringify(tasks));
-        
-        input.value = "";
-        document.getElementById('tingSound').play().catch(() => {});
-        renderAll();
-    }
-
-    function renderAll() {
-        const container = document.getElementById('taskListContainer');
-        const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
-        container.innerHTML = "";
-
-        // Filter tugas
-        const filteredTasks = tasks.filter(t => {
-            if (currentFilter === 'active') return !t.done;
-            if (currentFilter === 'completed') return t.done;
-            return true;
-        });
-
-        // Pengelompokan berdasarkan tanggal
-        const grouped = filteredTasks.reduce((groups, task) => {
-            const date = task.date;
-            if (!groups[date]) groups[date] = [];
-            groups[date].push(task);
-            return groups;
-        }, {});
-
-        // Urutkan tanggal (terbaru di atas)
-        const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
-
-        sortedDates.forEach(date => {
-            const dateHeader = document.createElement('div');
-            dateHeader.className = 'date-group-header';
-            dateHeader.textContent = date;
-            container.appendChild(dateHeader);
-
-            const ul = document.createElement('ul');
-            grouped[date].forEach(task => {
-                const li = document.createElement('li');
-                li.style.borderLeft = `6px solid ${priorityColors[task.priority]}`;
-                li.innerHTML = `
-                    <div class="task-content ${task.done ? 'done' : ''}" onclick="toggleDone(${task.id})">
-                        <span class="meta-tag">🕒 ${task.time}</span>
-                        <span class="text-val">${task.text}</span>
-                    </div>
-                    <span class="delete-btn" onclick="hapusTugas(${task.id})">×</span>
-                `;
-                ul.appendChild(li);
-            });
-            container.appendChild(ul);
-        });
-
-        updateProgress(tasks);
-    }
-
-    function toggleDone(id) {
-        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
-        tasks = tasks.map(t => { if (t.id === id) t.done = !t.done; return t; });
-        localStorage.setItem('proTasks', JSON.stringify(tasks));
-        renderAll();
-    }
-
-    function hapusTugas(id) {
-        let tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
-        localStorage.setItem('proTasks', JSON.stringify(tasks.filter(t => t.id !== id)));
-        renderAll();
-    }
-
-    function hapusSemua() {
-        if (confirm("Hapus semua catatan?")) {
-            localStorage.removeItem('proTasks');
-            renderAll();
-        }
-    }
-
-    async function bagikanCatatan() {
-        const tasks = JSON.parse(localStorage.getItem('proTasks')) || [];
-        if (tasks.length === 0) return alert("Kosong!");
-        const teks = "Jurnal Tugasku Pro:\n" + tasks.map(t => `${t.date} - ${t.text} (${t.done ? 'Selesai' : 'Belum'})`).join("\n");
-        if (navigator.share) await navigator.share({ title: 'My Tasks', text: teks });
-    }
-</script>
-</body>
-</html>
+        /* Grouping & List */
+        .date-header { margin: 25px 0 10px 0; font-size:
