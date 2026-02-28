@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tugasku-pro-v1';
+const CACHE_NAME = 'Tugas Gio_017-v1';
 const assets = [
   './',
   './index.html',
